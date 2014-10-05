@@ -17,48 +17,47 @@ class GameViewController : UIViewController {
 	var floorNode : SCNNode!
 	var motionManager : CMMotionManager!
 	
-    override func viewDidLoad() {
-        super.viewDidLoad()
-		
+	override func viewDidLoad() {
+		super.viewDidLoad()
+
 		// Setup scene
 		scene = SCNScene()
 		scene.physicsWorld.speed = 3
-		
+
 		// Setup camera
 		cameraNode = SCNNode()
-        cameraNode.camera = SCNCamera()
+		cameraNode.camera = SCNCamera()
 		cameraNode.camera?.xFov = 50
 		cameraNode.camera?.yFov = 50
-        cameraNode.position = SCNVector3(x: 0, y: 2, z: 15)
+		cameraNode.position = SCNVector3(x: 0, y: 2, z: 15)
 		scene.rootNode.addChildNode(cameraNode)
-		
-        // Setup light
+
+		// Setup environment
 		setupLights()
-		
-		// Add a ground
 		setupFloor()
-		
-		// Add marble
+
+		// Add first marble
 		addMarbleAtAltitude(2)
-		
+
 		// Setup view
 		let view = self.view as SCNView
 		view.scene = scene
 
+		// Detect taps
 		let tapRecognizer = UITapGestureRecognizer(target: self, action: "handleTap:")
 		view.gestureRecognizers = [tapRecognizer]
-		
+
 		// Detect motion
 		motionManager = CMMotionManager()
 		motionManager.accelerometerUpdateInterval = 0.3
 		
 		motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) { (accelerometerData, error) in
 			let acceleration = accelerometerData.acceleration
-			
+
 			let accelX = Float(9.8 * acceleration.y)
 			let accelY = Float(-9.8 * acceleration.x)
 			let accelZ = Float(9.8 * acceleration.z)
-			
+
 			self.scene.physicsWorld.gravity = SCNVector3(x: accelX, y: accelY, z: accelZ)
 		}
 	}
