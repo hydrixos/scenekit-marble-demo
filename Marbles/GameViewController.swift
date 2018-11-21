@@ -19,7 +19,7 @@ class GameViewController : UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-
+		
 		// Setup scene
 		scene = SCNScene()
 		scene.physicsWorld.speed = 3
@@ -40,23 +40,23 @@ class GameViewController : UIViewController {
 		addMarbleAtAltitude(2)
 
 		// Setup view
-		let view = self.view as SCNView
+		let view = self.view as! SCNView
 		view.scene = scene
 
 		// Detect taps
-		let tapRecognizer = UITapGestureRecognizer(target: self, action: "handleTap:")
+		let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(GameViewController.handleTap(_:)))
 		view.gestureRecognizers = [tapRecognizer]
 
 		// Detect motion
 		motionManager = CMMotionManager()
 		motionManager.accelerometerUpdateInterval = 0.3
 		
-		motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) { (accelerometerData, error) in
-			let acceleration = accelerometerData.acceleration
+		motionManager.startAccelerometerUpdates(to: OperationQueue.current!) { (accelerometerData, error) in
+			let acceleration = accelerometerData?.acceleration
 
-			let accelX = Float(9.8 * acceleration.y)
-			let accelY = Float(-9.8 * acceleration.x)
-			let accelZ = Float(9.8 * acceleration.z)
+			let accelX = Float(9.8 * (acceleration?.y)!)
+			let accelY = Float(-9.8 * (acceleration?.x)!)
+			let accelZ = Float(9.8 * (acceleration?.z)!)
 
 			self.scene.physicsWorld.gravity = SCNVector3(x: accelX, y: accelY, z: accelZ)
 		}
@@ -66,20 +66,20 @@ class GameViewController : UIViewController {
 		// Setup ambient light
 		let ambientLightNode = SCNNode()
 		ambientLightNode.light = SCNLight()
-		ambientLightNode.light!.type = SCNLightTypeAmbient
+		ambientLightNode.light!.type = SCNLight.LightType.ambient
 		ambientLightNode.light!.color = UIColor.init(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
 		scene.rootNode.addChildNode(ambientLightNode)
 		
 		// Add spotlight
 		let spotlightNode = SCNNode()
 		spotlightNode.light = SCNLight()
-		spotlightNode.light!.type = SCNLightTypeSpot
-		spotlightNode.light!.color = UIColor.whiteColor()
+		spotlightNode.light!.type = SCNLight.LightType.spot
+		spotlightNode.light!.color = UIColor.white
 		spotlightNode.light!.spotInnerAngle = 60;
 		spotlightNode.light!.spotOuterAngle = 140;
 		spotlightNode.light!.attenuationFalloffExponent = 1
 		spotlightNode.position = SCNVector3(x: 0, y: 10, z: 0)
-		spotlightNode.rotation = SCNVector4(x: -1, y: 0, z: 0, w: Float(M_PI_2))
+		spotlightNode.rotation = SCNVector4(x: -1, y: 0, z: 0, w: .pi/2)
 		scene.rootNode.addChildNode(spotlightNode)
 	}
 	
@@ -93,32 +93,32 @@ class GameViewController : UIViewController {
 		
 		floorNode = SCNNode()
 		floorNode.geometry = floor
-		floorNode.physicsBody = SCNPhysicsBody.staticBody()
+		floorNode.physicsBody = SCNPhysicsBody.static()
 		
 		scene.rootNode.addChildNode(floorNode)
 	}
 	
-	func addMarbleAtAltitude(altitude: Float) {
+	func addMarbleAtAltitude(_ altitude: Float) {
 		let radius = Float(1.0)
 		let textureNames = ["orange", "blue", "red"]
 		let textureName = textureNames[Int(arc4random()) % textureNames.count]
 		
 		let marbleMaterial = SCNMaterial()
 		marbleMaterial.diffuse.contents = UIImage(named: textureName)
-		marbleMaterial.specular.contents = UIColor.whiteColor()
+		marbleMaterial.specular.contents = UIColor.white
 		
 		let marbleGeometry = SCNSphere(radius: CGFloat(radius))
 		marbleGeometry.segmentCount = 128
 		
 		let marble = SCNNode(geometry: marbleGeometry)
 		marble.geometry?.materials = [marbleMaterial];
-		marble.physicsBody = SCNPhysicsBody.dynamicBody()
+		marble.physicsBody = SCNPhysicsBody.dynamic()
 		marble.position = SCNVector3(x: Float(arc4random()) / (Float(UINT32_MAX) * 10), y: altitude + radius, z: 0)
 		
 		scene.rootNode.addChildNode(marble)
 	}
 
-	func handleTap(sender: AnyObject) {
+	@objc func handleTap(_ sender: AnyObject) {
 		addMarbleAtAltitude(10)
 	}
 }
